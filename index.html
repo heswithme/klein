@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>curve</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .slider-container label {
+            width: 80px;
+            margin-right: 10px;
+        }
+        .slider-container input[type="range"] {
+            width: 200px;
+            margin-right: 10px;
+        }
+        .slider-value {
+            width: 50px;
+            text-align: right;
+        }
+        #buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #terminal {
+            white-space: pre;
+            font-size: 0.8em;
+            max-width: none;
+            max-height: calc(100vh - 240px);
+            overflow: auto;
+            text-align: center;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <div class="slider-container">
+            <label for="initialA">Angle A:</label>
+            <input type="range" id="initialA" min="-180" max="180" value="90">
+            <span id="valueA" class="slider-value">90°</span>
+        </div>
+        <div class="slider-container">
+            <label for="initialB">Angle B:</label>
+            <input type="range" id="initialB" min="-180" max="180" value="30">
+            <span id="valueB" class="slider-value">30°</span>
+        </div>
+        <div class="slider-container">
+            <label for="initialC">Angle C:</label>
+            <input type="range" id="initialC" min="-180" max="180" value="180">
+            <span id="valueC" class="slider-value">180°</span>
+        </div>
+        <div id="buttons">
+            <button id="toggle">Spin it!</button>
+            <button id="reset">Reset Angles</button>
+        </div>
+    </div>
+    <div id="terminal"></div>
+    <script>
+        let A = 0, B = 0, C = 0;
+        let mouseDown = false, lastMouseX = 0, velocityB = 0, friction = 0.95, autoRotate = false;
+        const defaultInitialADeg = 100, defaultInitialBDeg = 25, defaultInitialCDeg = -180;
+        let initialADeg = defaultInitialADeg, initialBDeg = defaultInitialBDeg, initialCDeg = defaultInitialCDeg;
+        const degToRad = deg => deg * (Math.PI / 180);
+        function updateAngleDisplays() {
+            document.getElementById('valueA').textContent = `${initialADeg}°`;
+            document.getElementById('valueB').textContent = `${initialBDeg}°`;
+            document.getElementById('valueC').textContent = `${initialCDeg}°`;
+        }
+        function jetColorMap(value) {
+            const fourValue = 4 * value;
+            let r = Math.min(fourValue - 1.5, -fourValue + 4.5);
+            let g = Math.min(fourValue - 0.5, -fourValue + 3.5);
+            let b = Math.min(fourValue + 0.5, -fourValue + 2.5);
+            r = Math.max(0, Math.min(1, r));
+            g = Math.max(0, Math.min(1, g));
+            b = Math.max(0, Math.min(1, b));
+            const toHex = x => ('0' + Math.round(x * 255).toString(16)).slice(-2);
+            return '#' + toHex(r) + toHex(g) + toHex(b);
+        }
+        function renderKleinBottle() {
+            const width = 160, height = 44, size = width * height;
+            const b = new Array(size).fill(' ');
+            const zBuffer = new Array(size).fill(-Infinity);
+            let yMin = Infinity, yMax = -Infinity;
+            const initialA = degToRad(initialADeg), initialB = degToRad(initialBDeg), initialC = degToRad(initialCDeg);
+            const ARad = degToRad(A), BRad = degToRad(B), CRad = degToRad(C);
+            const K1 = 35, K2 = 40, K3 = 20;
+            const characters = ".:-=+*#%@";
+            const points = [];
+            for (let u = 0; u <= 6.28; u += 0.03) {
+                for (let v = 0; v <= 6.28; v += 0.02) {
+                    let kx = 1.58, ky = 1, kz = 2.5;
+                    scale = 1.2;
+                    kx *= scale; ky *= scale; kz *= scale;
+                    let r = 4 * (1 - Math.cos(u) / 2);
+                    let half = (u >= 0 && u < Math.PI);
+                    let x, y, zCoord;
+                    if (half) {
+                        x = kx * (6 * Math.cos(u) * (1 + Math.sin(u)) + r * Math.cos(u) * Math.cos(v));
+                        y = ky * (16 * Math.sin(u) + r * Math.sin(u) * Math.cos(v));
+                    } else {
+                        x = kx * (6 * Math.cos(u) * (1 + Math.sin(u)) + r * Math.cos(v + Math.PI));
+                        y = ky * (16 * Math.sin(u));
+                    }
+                    zCoord = kz * (r * Math.sin(v));
+                    let x1 = x, y1 = y * Math.cos(initialA) - zCoord * Math.sin(initialA), z1 = y * Math.sin(initialA) + zCoord * Math.cos(initialA);
+                    let x2 = x1 * Math.cos(initialB) + z1 * Math.sin(initialB), y2 = y1, z2 = -x1 * Math.sin(initialB) + z1 * Math.cos(initialB);
+                    let x3 = x2 * Math.cos(initialC) - y2 * Math.sin(initialC), y3 = x2 * Math.sin(initialC) + y2 * Math.cos(initialC), z3 = z2;
+                    let x4 = x3, y4 = y3 * Math.cos(ARad) - z3 * Math.sin(ARad), z4 = y3 * Math.sin(ARad) + z3 * Math.cos(ARad);
+                    let x5 = x4 * Math.cos(BRad) + z4 * Math.sin(BRad), y5 = y4, z5 = -x4 * Math.sin(BRad) + z4 * Math.cos(BRad);
+                    let xRot = x5 * Math.cos(CRad) - y5 * Math.sin(CRad), yRot = x5 * Math.sin(CRad) + y5 * Math.cos(CRad), zRot = z5;
+                    const ooz = 1 / (zRot + K1);
+                    const xp = Math.floor(width / 2 - K2 * ooz * xRot);
+                    const yp = Math.floor(height / 2 - K3 * ooz * yRot);
+                    const idx = xp + width * yp;
+                    const L = Math.abs(Math.cos(v) * Math.cos(u));
+                    if (yp >= 0 && yp < height && xp >= 0 && xp < width && idx >= 0 && idx < size) {
+                        if (yRot < yMin) yMin = yRot;
+                        if (yRot > yMax) yMax = yRot;
+                        points.push({ idx: idx, yRot: yRot, ooz: ooz, L: L });
+                    }
+                }
+            }
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                const { idx, yRot, L, ooz } = point;
+                const normalizedY = (yRot - yMin) / (yMax - yMin);
+                const color = jetColorMap(normalizedY);
+                let luminance_index = Math.floor(L * 8);
+                luminance_index = Math.max(0, Math.min(8, luminance_index));
+                const char = characters[luminance_index];
+                if (ooz > zBuffer[idx]) {
+                    zBuffer[idx] = ooz;
+                    b[idx] = `<span style="color:${color}">${char}</span>`;
+                }
+            }
+            let output = '';
+            for (let k = 0; k < size; k++) {
+                output += (k % width === width - 1) ? '\n' : b[k];
+            }
+            document.getElementById("terminal").innerHTML = output;
+        }
+        function animate() {
+            if (autoRotate) {
+                A += 2;
+                B -= 0;
+                C += 0;
+            }
+            B += velocityB;
+            velocityB *= friction;
+            renderKleinBottle();
+            requestAnimationFrame(animate);
+        }
+        animate();
+        document.addEventListener('mousedown', event => {
+            mouseDown = true;
+            lastMouseX = event.clientX;
+        });
+        document.addEventListener('mouseup', () => {
+            mouseDown = false;
+        });
+        document.addEventListener('mousemove', event => {
+            if (mouseDown) {
+                const deltaX = event.clientX - lastMouseX;
+                velocityB = deltaX * 0.05;
+                lastMouseX = event.clientX;
+            }
+        });
+        document.addEventListener('touchstart', event => {
+            mouseDown = true;
+            lastMouseX = event.touches[0].clientX;
+        });
+        document.addEventListener('touchend', () => {
+            mouseDown = false;
+        });
+        document.addEventListener('touchmove', event => {
+            if (mouseDown) {
+                const deltaX = event.touches[0].clientX - lastMouseX;
+                velocityB = deltaX * 0.05;
+                lastMouseX = event.touches[0].clientX;
+            }
+        });
+        document.getElementById('toggle').addEventListener('click', () => {
+            autoRotate = !autoRotate;
+        });
+        document.getElementById('initialA').addEventListener('input', event => {
+            initialADeg = parseInt(event.target.value);
+            updateAngleDisplays();
+        });
+        document.getElementById('initialB').addEventListener('input', event => {
+            initialBDeg = parseInt(event.target.value);
+            updateAngleDisplays();
+        });
+        document.getElementById('initialC').addEventListener('input', event => {
+            initialCDeg = parseInt(event.target.value);
+            updateAngleDisplays();
+        });
+        document.getElementById('reset').addEventListener('click', () => {
+            initialADeg = defaultInitialADeg;
+            initialBDeg = defaultInitialBDeg;
+            initialCDeg = defaultInitialCDeg;
+            A = 0;
+            B = 0;
+            C = 0;
+            velocityB = 0;
+            autoRotate = false;
+            document.getElementById('initialA').value = initialADeg;
+            document.getElementById('initialB').value = initialBDeg;
+            document.getElementById('initialC').value = initialCDeg;
+            updateAngleDisplays();
+            renderKleinBottle();
+        });
+        updateAngleDisplays();
+    </script>
+</body>
+</html>
