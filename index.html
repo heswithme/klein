@@ -2,92 +2,299 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>curve</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Curve's Klein bottle by heswithme_eth.">
+    <title>curve / klein / heswithme_eth</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: black;
-            color: white;
-            font-family: monospace;
+            min-height: 100svh;
+            margin: 0;
+            padding: 18px;
+            background: #020305;
+            color: #f2f5f2;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            justify-content: space-between;
+            gap: 14px;
             overflow: hidden;
         }
-        #controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 10px;
+
+        a {
+            color: inherit;
+            text-decoration: none;
         }
+
+        a:hover,
+        a:focus-visible {
+            color: #fff;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        #identity {
+            width: min(100%, 1180px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            color: rgba(242, 245, 242, 0.64);
+            font-size: 12px;
+            line-height: 1.5;
+            text-transform: lowercase;
+        }
+
+        #identity h1 {
+            margin: 0;
+            color: rgba(242, 245, 242, 0.92);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0;
+        }
+
+        #identity p {
+            margin: 0;
+        }
+
+        #links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        #links a {
+            color: rgba(242, 245, 242, 0.58);
+            border-bottom: 1px solid rgba(242, 245, 242, 0.22);
+            transition: color 160ms ease, border-color 160ms ease;
+        }
+
+        #links a:hover,
+        #links a:focus-visible {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.72);
+            outline: none;
+        }
+
+        main {
+            width: 100%;
+            min-height: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #terminal {
+            white-space: pre;
+            font-size: clamp(4px, min(0.95vw, 1.35vh), 12px);
+            line-height: 0.98;
+            max-width: 100%;
+            overflow: hidden;
+            text-align: center;
+            margin: 0 auto;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #terminal.dragging {
+            cursor: grabbing;
+        }
+
+        #controls {
+            width: min(100%, 900px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            color: rgba(242, 245, 242, 0.58);
+            font-size: 12px;
+            line-height: 1;
+            flex-wrap: wrap;
+        }
+
         .slider-container {
             display: flex;
             align-items: center;
-            margin: 5px 0;
+            gap: 8px;
+            min-width: 184px;
         }
+
         .slider-container label {
-            width: 80px;
-            margin-right: 10px;
+            width: 12px;
+            color: rgba(242, 245, 242, 0.68);
         }
+
         .slider-container input[type="range"] {
-            width: 200px;
-            margin-right: 10px;
+            width: 112px;
+            accent-color: #f2f5f2;
+            cursor: pointer;
         }
+
         .slider-value {
             width: 50px;
             text-align: right;
+            white-space: nowrap;
+            color: rgba(242, 245, 242, 0.84);
         }
+
         #buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
         }
-        #terminal {
-            white-space: pre;
-            font-size: 0.8em;
-            max-width: none;
-            max-height: calc(100vh - 240px);
-            overflow: auto;
-            text-align: center;
-            margin: 0 auto;
+
+        button {
+            min-height: 30px;
+            padding: 0 12px;
+            color: rgba(242, 245, 242, 0.72);
+            background: transparent;
+            border: 1px solid rgba(242, 245, 242, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+        }
+
+        button:hover,
+        button:focus-visible {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.58);
+            outline: none;
+        }
+
+        button.active {
+            color: #020305;
+            background: rgba(242, 245, 242, 0.9);
+            border-color: rgba(242, 245, 242, 0.9);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 14px 10px;
+                gap: 12px;
+            }
+
+            #identity {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            #controls {
+                display: grid;
+                grid-template-columns: 1fr;
+                justify-items: center;
+                gap: 10px;
+            }
+
+            .slider-container {
+                width: min(100%, 232px);
+                min-width: 0;
+            }
+
+            .slider-container input[type="range"] {
+                width: 130px;
+            }
+
+            #buttons {
+                width: min(100%, 232px);
+            }
+
+            #buttons button {
+                flex: 1;
+            }
         }
     </style>
 </head>
 <body>
+    <header id="identity">
+        <div>
+            <h1>curve / klein bottle</h1>
+            <p>by heswithme_eth</p>
+        </div>
+        <nav id="links" aria-label="developer links">
+            <a href="https://x.com/heswithme_eth" target="_blank" rel="noopener noreferrer">x</a>
+            <a href="https://github.com/heswithme" target="_blank" rel="noopener noreferrer">github</a>
+        </nav>
+    </header>
+    <main>
+        <div id="terminal" aria-label="interactive ascii Klein bottle"></div>
+    </main>
     <div id="controls">
         <div class="slider-container">
-            <label for="initialA">Angle A:</label>
-            <input type="range" id="initialA" min="-180" max="180" value="90">
-            <span id="valueA" class="slider-value">90°</span>
+            <label for="initialA">A</label>
+            <input type="range" id="initialA" min="70" max="110" step="0.1" value="90" aria-label="Angle A">
+            <span id="valueA" class="slider-value">90deg</span>
         </div>
         <div class="slider-container">
-            <label for="initialB">Angle B:</label>
-            <input type="range" id="initialB" min="-180" max="180" value="30">
-            <span id="valueB" class="slider-value">30°</span>
+            <label for="initialB">B</label>
+            <input type="range" id="initialB" min="-10" max="30" step="0.1" value="10" aria-label="Angle B">
+            <span id="valueB" class="slider-value">10deg</span>
         </div>
         <div class="slider-container">
-            <label for="initialC">Angle C:</label>
-            <input type="range" id="initialC" min="-180" max="180" value="180">
-            <span id="valueC" class="slider-value">180°</span>
+            <label for="initialC">C</label>
+            <input type="range" id="initialC" min="160" max="200" step="0.1" value="180" aria-label="Angle C">
+            <span id="valueC" class="slider-value">180deg</span>
         </div>
         <div id="buttons">
-            <button id="toggle">Spin it!</button>
-            <button id="reset">Reset Angles</button>
+            <button id="toggle" type="button" aria-pressed="false">Spin</button>
+            <button id="reset" type="button">Reset</button>
         </div>
     </div>
-    <div id="terminal"></div>
     <script>
         let A = 0, B = 0, C = 0;
-        let mouseDown = false, lastMouseX = 0, velocityB = 0, friction = 0.95, autoRotate = false;
-        const defaultInitialADeg = 100, defaultInitialBDeg = 25, defaultInitialCDeg = -180;
+        let mouseDown = false, lastMouseX = 0, lastMouseY = 0, autoRotate = true, needsRender = true;
+        let lastRenderTime = 0;
+        let autoDirection = 1;
+        const angleLimits = {
+            A: { min: 70, max: 110 },
+            B: { min: -10, max: 30 },
+            C: { min: 160, max: 200 },
+        };
+        const defaultInitialADeg = 90, defaultInitialBDeg = 10, defaultInitialCDeg = 180;
         let initialADeg = defaultInitialADeg, initialBDeg = defaultInitialBDeg, initialCDeg = defaultInitialCDeg;
+        const terminal = document.getElementById('terminal');
+        const toggle = document.getElementById('toggle');
         const degToRad = deg => deg * (Math.PI / 180);
-        function updateAngleDisplays() {
-            document.getElementById('valueA').textContent = `${initialADeg}°`;
-            document.getElementById('valueB').textContent = `${initialBDeg}°`;
-            document.getElementById('valueC').textContent = `${initialCDeg}°`;
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
         }
+
+        function formatDeg(value) {
+            return `${Math.round(value)}deg`;
+        }
+
+        function requestRender() {
+            needsRender = true;
+        }
+
+        function updateAngleDisplays() {
+            document.getElementById('valueA').textContent = formatDeg(initialADeg);
+            document.getElementById('valueB').textContent = formatDeg(initialBDeg);
+            document.getElementById('valueC').textContent = formatDeg(initialCDeg);
+        }
+
+        function syncAngleInputs() {
+            document.getElementById('initialA').value = initialADeg;
+            document.getElementById('initialB').value = initialBDeg;
+            document.getElementById('initialC').value = initialCDeg;
+        }
+
+        function updateSpinButton() {
+            toggle.classList.toggle('active', autoRotate);
+            toggle.setAttribute('aria-pressed', String(autoRotate));
+            toggle.textContent = autoRotate ? 'Stop' : 'Spin';
+        }
+
         function jetColorMap(value) {
             const fourValue = 4 * value;
             let r = Math.min(fourValue - 1.5, -fourValue + 4.5);
@@ -100,20 +307,26 @@
             return '#' + toHex(r) + toHex(g) + toHex(b);
         }
         function renderKleinBottle() {
-            const width = 160, height = 44, size = width * height;
+            const width = 240, height = 72, size = width * height;
             const b = new Array(size).fill(' ');
             const zBuffer = new Array(size).fill(-Infinity);
             let yMin = Infinity, yMax = -Infinity;
             const initialA = degToRad(initialADeg), initialB = degToRad(initialBDeg), initialC = degToRad(initialCDeg);
             const ARad = degToRad(A), BRad = degToRad(B), CRad = degToRad(C);
-            const K1 = 35, K2 = 40, K3 = 20;
+            const cameraDistance = 60;
+            const projectionScale = 132;
+            const characterAspect = 0.56;
             const characters = ".:-=+*#%@";
             const points = [];
-            for (let u = 0; u <= 6.28; u += 0.03) {
-                for (let v = 0; v <= 6.28; v += 0.02) {
-                    let kx = 1.58, ky = 1, kz = 2.5;
-                    scale = 1.2;
-                    kx *= scale; ky *= scale; kz *= scale;
+            const kx = 1.2, ky = 1, kz = 1.5;
+            let minDrawX = width, maxDrawX = -1, minDrawY = height, maxDrawY = -1;
+            const uSegments = 360;
+            const vSegments = 300;
+            for (let ui = 0; ui <= uSegments; ui++) {
+                const u = ui / uSegments * Math.PI * 2;
+                for (let vi = 0; vi <= vSegments; vi++) {
+                    const v = vi / vSegments * Math.PI * 2;
+                    if (ui % 5 !== 0 && vi % 6 !== 0) continue;
                     let r = 4 * (1 - Math.cos(u) / 2);
                     let half = (u >= 0 && u < Math.PI);
                     let x, y, zCoord;
@@ -131,9 +344,11 @@
                     let x4 = x3, y4 = y3 * Math.cos(ARad) - z3 * Math.sin(ARad), z4 = y3 * Math.sin(ARad) + z3 * Math.cos(ARad);
                     let x5 = x4 * Math.cos(BRad) + z4 * Math.sin(BRad), y5 = y4, z5 = -x4 * Math.sin(BRad) + z4 * Math.cos(BRad);
                     let xRot = x5 * Math.cos(CRad) - y5 * Math.sin(CRad), yRot = x5 * Math.sin(CRad) + y5 * Math.cos(CRad), zRot = z5;
-                    const ooz = 1 / (zRot + K1);
-                    const xp = Math.floor(width / 2 - K2 * ooz * xRot);
-                    const yp = Math.floor(height / 2 - K3 * ooz * yRot);
+                    const depth = zRot + cameraDistance;
+                    if (depth <= 0) continue;
+                    const ooz = 1 / depth;
+                    const xp = Math.floor(width / 2 - projectionScale * ooz * xRot / characterAspect);
+                    const yp = Math.floor(height / 2 - projectionScale * ooz * yRot);
                     const idx = xp + width * yp;
                     const L = Math.abs(Math.cos(v) * Math.cos(u));
                     if (yp >= 0 && yp < height && xp >= 0 && xp < width && idx >= 0 && idx < size) {
@@ -154,69 +369,116 @@
                 if (ooz > zBuffer[idx]) {
                     zBuffer[idx] = ooz;
                     b[idx] = `<span style="color:${color}">${char}</span>`;
+                    const x = idx % width;
+                    const y = Math.floor(idx / width);
+                    if (x < minDrawX) minDrawX = x;
+                    if (x > maxDrawX) maxDrawX = x;
+                    if (y < minDrawY) minDrawY = y;
+                    if (y > maxDrawY) maxDrawY = y;
                 }
             }
             let output = '';
-            for (let k = 0; k < size; k++) {
-                output += (k % width === width - 1) ? '\n' : b[k];
+            if (maxDrawX >= minDrawX && maxDrawY >= minDrawY) {
+                const minX = Math.max(0, minDrawX - 2);
+                const maxX = Math.min(width - 1, maxDrawX + 2);
+                const minY = Math.max(0, minDrawY - 1);
+                const maxY = Math.min(height - 1, maxDrawY + 1);
+                for (let y = minY; y <= maxY; y++) {
+                    for (let x = minX; x <= maxX; x++) {
+                        output += b[x + width * y];
+                    }
+                    output += '\n';
+                }
             }
-            document.getElementById("terminal").innerHTML = output;
+            terminal.innerHTML = output;
         }
-        function animate() {
-            if (autoRotate) {
-                A += 2;
-                B -= 0;
-                C += 0;
+
+        function animate(timestamp = 0) {
+            const shouldRender = needsRender || timestamp - lastRenderTime > 1000 / 30;
+            if (autoRotate && shouldRender) {
+                initialBDeg += autoDirection * 0.45;
+                if (initialBDeg >= angleLimits.B.max || initialBDeg <= angleLimits.B.min) {
+                    initialBDeg = clamp(initialBDeg, angleLimits.B.min, angleLimits.B.max);
+                    autoDirection *= -1;
+                }
+                updateAngleDisplays();
+                syncAngleInputs();
+                requestRender();
             }
-            B += velocityB;
-            velocityB *= friction;
-            renderKleinBottle();
+            if (needsRender && shouldRender) {
+                renderKleinBottle();
+                needsRender = false;
+                lastRenderTime = timestamp;
+            }
             requestAnimationFrame(animate);
         }
-        animate();
-        document.addEventListener('mousedown', event => {
+
+        terminal.addEventListener('pointerdown', event => {
             mouseDown = true;
             lastMouseX = event.clientX;
-        });
-        document.addEventListener('mouseup', () => {
-            mouseDown = false;
-        });
-        document.addEventListener('mousemove', event => {
-            if (mouseDown) {
-                const deltaX = event.clientX - lastMouseX;
-                velocityB = deltaX * 0.05;
-                lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+            autoRotate = false;
+            updateSpinButton();
+            terminal.classList.add('dragging');
+            if (terminal.setPointerCapture) {
+                terminal.setPointerCapture(event.pointerId);
             }
         });
-        document.addEventListener('touchstart', event => {
-            mouseDown = true;
-            lastMouseX = event.touches[0].clientX;
-        });
-        document.addEventListener('touchend', () => {
+
+        terminal.addEventListener('pointerup', event => {
             mouseDown = false;
-        });
-        document.addEventListener('touchmove', event => {
-            if (mouseDown) {
-                const deltaX = event.touches[0].clientX - lastMouseX;
-                velocityB = deltaX * 0.05;
-                lastMouseX = event.touches[0].clientX;
+            terminal.classList.remove('dragging');
+            if (terminal.releasePointerCapture) {
+                terminal.releasePointerCapture(event.pointerId);
             }
         });
-        document.getElementById('toggle').addEventListener('click', () => {
+
+        terminal.addEventListener('pointercancel', () => {
+            mouseDown = false;
+            terminal.classList.remove('dragging');
+        });
+
+        terminal.addEventListener('pointermove', event => {
+            if (!mouseDown) return;
+            const deltaX = event.clientX - lastMouseX;
+            const deltaY = event.clientY - lastMouseY;
+            initialBDeg = clamp(initialBDeg + deltaX * 0.18, angleLimits.B.min, angleLimits.B.max);
+            initialADeg = clamp(initialADeg - deltaY * 0.18, angleLimits.A.min, angleLimits.A.max);
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+            updateAngleDisplays();
+            syncAngleInputs();
+            requestRender();
+        });
+
+        toggle.addEventListener('click', () => {
             autoRotate = !autoRotate;
+            updateSpinButton();
+            requestRender();
         });
+
         document.getElementById('initialA').addEventListener('input', event => {
-            initialADeg = parseInt(event.target.value);
+            initialADeg = clamp(parseFloat(event.target.value), angleLimits.A.min, angleLimits.A.max);
             updateAngleDisplays();
+            requestRender();
         });
+
         document.getElementById('initialB').addEventListener('input', event => {
-            initialBDeg = parseInt(event.target.value);
+            autoRotate = false;
+            updateSpinButton();
+            initialBDeg = clamp(parseFloat(event.target.value), angleLimits.B.min, angleLimits.B.max);
             updateAngleDisplays();
+            requestRender();
         });
+
         document.getElementById('initialC').addEventListener('input', event => {
-            initialCDeg = parseInt(event.target.value);
+            autoRotate = false;
+            updateSpinButton();
+            initialCDeg = clamp(parseFloat(event.target.value), angleLimits.C.min, angleLimits.C.max);
             updateAngleDisplays();
+            requestRender();
         });
+
         document.getElementById('reset').addEventListener('click', () => {
             initialADeg = defaultInitialADeg;
             initialBDeg = defaultInitialBDeg;
@@ -224,15 +486,18 @@
             A = 0;
             B = 0;
             C = 0;
-            velocityB = 0;
-            autoRotate = false;
-            document.getElementById('initialA').value = initialADeg;
-            document.getElementById('initialB').value = initialBDeg;
-            document.getElementById('initialC').value = initialCDeg;
+            autoRotate = true;
+            autoDirection = 1;
+            syncAngleInputs();
             updateAngleDisplays();
-            renderKleinBottle();
+            updateSpinButton();
+            requestRender();
         });
+
+        syncAngleInputs();
         updateAngleDisplays();
+        updateSpinButton();
+        animate();
     </script>
 </body>
 </html>
